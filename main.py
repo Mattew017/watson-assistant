@@ -24,8 +24,13 @@ def start_bot_session(message):
 def send_text(message):
     try:
         response = watson_bot.send(message.text)
+    except Exception as e:
+        print(e)
+    try:
         bot.send_message(message.chat.id, response)
-    except:
+    except Exception as e:
+        print(response)
+        print(e)
         if not watson_bot.session_is_active:
             bot.send_message(message.chat.id, "Напишите /start для запуска бота:")
         else:
