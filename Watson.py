@@ -10,6 +10,7 @@ WORKSPACE_ID = '57256cdd-c343-410d-86e5-25ecd7f1c476'
 
 class Watson:
     session_is_active = False
+
     def __init__(self):
         self.authenticator = IAMAuthenticator(APIKEY)
         self.assistant = AssistantV2(
@@ -17,18 +18,16 @@ class Watson:
             authenticator=self.authenticator
         )
         self.assistant.set_service_url(URL)
-
-
+        self.session = None
+        self.session_id = None
 
     def start_session(self):
-        
-        # session starting
+
+        # session start
         self.session_is_active = True
         self.session = self.assistant.create_session(assistant_id=ASSISTANT_ID)
         self.session_id = self.session.get_result()['session_id']
         print(f"SESSION  {self.session_id} STARTED")
-        
-
 
     def send(self, command):
         try:
@@ -37,15 +36,16 @@ class Watson:
                 session_id=self.session_id,
                 input={'text': command}
             ).get_result()['output']['generic'][0]['text']
-            #print(response)
             return response
         except Exception as exp:
             pass
-            print('Exception catch!', exp)
-    
+
     def end_session(self):
-        # session deleting
-        self.session_is_active = False
-        if self.session_id:
-            self.assistant.delete_session(assistant_id=ASSISTANT_ID, session_id=self.session_id)
-            print(f"SESSION {self.session_id} ENDED")
+        # session delete
+        try:
+            if self.session_id and self.session_is_active:
+                self.assistant.delete_session(assistant_id=ASSISTANT_ID, session_id=self.session_id)
+                print(f"SESSION {self.session_id} ENDED")
+                self.session_is_active = False
+        except Exception as e:
+            pass

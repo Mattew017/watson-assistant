@@ -29,4 +29,7 @@ def search_books(string: str, count_of_books=5):
                 count += 1
     return list_of_books
 
-
+if __name__ == '__main__':
+    books = search_books(input())
+    for book in books:
+        print(book)
