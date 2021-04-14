@@ -36,6 +36,7 @@ class Watson:
                 session_id=self.session_id,
                 input={'text': command}
             ).get_result()['output']['generic'][0]['text']
+
             return response
         except Exception as exp:
             pass

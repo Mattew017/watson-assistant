@@ -1,8 +1,7 @@
 import telebot
 import Watson
 
-import  libgen
-from telebot import types
+import libgen
 
 is_parsing = False
 
@@ -32,10 +31,10 @@ def send_text(message):
     markup = telebot.types.InlineKeyboardMarkup()
     markup.add(telebot.types.InlineKeyboardButton(text='Книги по ML и NN', url=BOOKS_DISK))
     markup.add(telebot.types.InlineKeyboardButton(text='Тесты по Нейронным сетям', url=NN_TEST_FIRST))
-    markup.add(telebot.types.InlineKeyboardButton(text='Учебный план', url='https://ya.ru'))
-    markup.add(telebot.types.InlineKeyboardButton( text='Поиск по libgen.com', callback_data='parse'))
+    markup.add(telebot.types.InlineKeyboardButton(text='Учебный план', callback_data='plan'))
+    markup.add(telebot.types.InlineKeyboardButton(text='Поиск по libgen.com', callback_data='parse'))
 
-    #Если был запрос для парсинга
+    # Если был запрос для парсинга
     global is_parsing
     if is_parsing:
         is_parsing = False
@@ -47,30 +46,45 @@ def send_text(message):
             bot.send_message(message.chat.id, text="По такому запросу ничего не нашлось.")
         return
 
-
+    # noinspection PyBroadException
     try:
         response = watson_bot.send(message.text)
+        if response == 'materials':
+            bot.send_message(message.chat.id, text=f"{BOOKS_DISK}")
+        elif response == 'test':
+            bot.send_message(message.chat.id, text=f"{NN_TEST_FIRST}")
+        elif response == 'curriculum':
+            bot.send_photo(message.chat.id, photo=open('Images/image1.jfif', 'rb'))
+            bot.send_photo(message.chat.id, photo=open('Images/image2.jfif', 'rb'))
+            bot.send_photo(message.chat.id, photo=open('Images/image3.jfif', 'rb'))
+        elif response == 'parsing':
+            bot.send_message(message.chat.id, text='Введите строку поиска на LibGen:')
+            is_parsing = True
+        else:
+            print('else')
+            bot.send_message(message.chat.id, text=response)
+
     except Exception as e:
-        pass
-    try:
-        bot.send_message(message.chat.id, response)
-    except Exception as e:
+        print(e)
         if not watson_bot.session_is_active:
             bot.send_message(message.chat.id, "Напишите /start для запуска бота:")
         else:
-            bot.send_message(message.chat.id, text="Можете перефразировать? Или выберите действие:", reply_markup=markup)
+            bot.send_message(message.chat.id, text="Можете перефразировать? Или выберите действие:",
+                             reply_markup=markup)
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def query_handler(call):
-
     answer = ''
     if call.data == 'parse':
         answer = 'Введите строку поиска на LibGen:'
         global is_parsing
         is_parsing = True
-
-    bot.send_message(call.message.chat.id, answer)
+        bot.send_message(call.message.chat.id, answer)
+    elif call.data == 'plan':
+        bot.send_photo(call.message.chat.id, photo=open('Images/image1.jfif', 'rb'))
+        bot.send_photo(call.message.chat.id, photo=open('Images/image2.jfif', 'rb'))
+        bot.send_photo(call.message.chat.id, photo=open('Images/image3.jfif', 'rb'))
 
 
 def main():
